@@ -1,6 +1,6 @@
 import json
 from lifewatch.llm.llm_classify.utils import create_ChatTongyiModel
-from lifewatch.llm.custom_prompt.chatbot_prompt.feature_introduce import intro_router_prompt
+from lifewatch.llm.custom_prompt.chatbot_prompt.feature_introduce import intro_router_template
 from lifewatch.llm.llm_classify.schemas.user_guide_schemas import GuideSection,UserGuide,SummaryOption
 from lifewatch.llm.llm_classify.utils.user_guide_parser import load_user_guide
 chat_model = create_ChatTongyiModel(enable_search=False,
@@ -27,7 +27,7 @@ def update_usage(result):
 
 def test_for_intro_router():
     """两次路由版本：先粗筛再细筛"""
-    from lifewatch.llm.custom_prompt.chatbot_prompt.feature_introduce import intro_prompt
+    from lifewatch.llm.custom_prompt.chatbot_prompt.feature_introduce import intro_template
     
     # 重置 usage 统计
     usage["input_tokens"] = 0       
@@ -40,7 +40,7 @@ def test_for_intro_router():
     # 第一次调用：粗筛
     print("=== 第1步：粗筛路由 ===")
     outline = guide.transform_to_table(guide.get_children_summary(options=option))
-    result = chat_model.invoke(intro_router_prompt.format(outline=outline, question=question))
+    result = chat_model.invoke(intro_router_template.format(outline=outline, question=question))
     update_usage(result)
     id_list = json.loads(result.content)
     print(f"路由结果: {id_list}")
@@ -57,7 +57,7 @@ def test_for_intro_router():
     print("\n=== 第2步：细筛路由 ===")
     outline = guide.transform_to_table(outline)
     print(f"细筛范围:\n{outline}")
-    result = chat_model.invoke(intro_router_prompt.format(outline=outline, question=question))
+    result = chat_model.invoke(intro_router_template.format(outline=outline, question=question))
     update_usage(result)
     id_list = json.loads(result.content)
     print(f"路由结果: {id_list}")
@@ -75,7 +75,7 @@ def test_for_intro_router():
 
     # 第三次调用：生成功能介绍
     print("\n=== 第4步：生成功能介绍 ===")
-    result = chat_model.invoke(intro_prompt.format(guide_content=content, question=question))
+    result = chat_model.invoke(intro_template.format(guide_content=content, question=question))
     update_usage(result)
     print(f"功能介绍结果:\n{result.content}")
 
@@ -89,7 +89,7 @@ def test_for_intro_router():
 
 def test_for_intro_router_for_once():
     """简化版本：只进行一次路由调用后直接获取内容并生成回复"""
-    from lifewatch.llm.custom_prompt.chatbot_prompt.feature_introduce import intro_prompt
+    from lifewatch.llm.custom_prompt.chatbot_prompt.feature_introduce import intro_template
     
     # 重置 usage 统计
     usage["input_tokens"] = 0
@@ -99,7 +99,7 @@ def test_for_intro_router_for_once():
     
     # 第一次调用：路由选择
     outline = guide.transform_to_table(guide.get_children_summary(options=option))
-    result = chat_model.invoke(intro_router_prompt.format(outline=outline, question=question))
+    result = chat_model.invoke(intro_router_template.format(outline=outline, question=question))
     update_usage(result)
     print("=== 路由结果 ===")
     print(result.content)
@@ -120,7 +120,7 @@ def test_for_intro_router_for_once():
     print(content)
     
     # 第二次调用：生成功能介绍
-    result = chat_model.invoke(intro_prompt.format(guide_content=content, question=question))
+    result = chat_model.invoke(intro_template.format(guide_content=content, question=question))
     update_usage(result)
     print("\n=== 功能介绍结果 ===")
     print(result.content)

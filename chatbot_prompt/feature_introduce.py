@@ -26,7 +26,7 @@ id必须是检索大纲中的id
 {question}
 """
 
-intro_router_prompt = PromptTemplate(
+intro_router_template = PromptTemplate(
     input_variables=["outline", "question"],
     template=router_template
 )
@@ -45,7 +45,7 @@ intro_template = """你是 LifePrism 的功能介绍助手。你的任务是根�
 {question}
 """
 
-intro_prompt = PromptTemplate(
+intro_template = PromptTemplate(
     input_variables=["guide_content", "question"],
     template=intro_template
 )
