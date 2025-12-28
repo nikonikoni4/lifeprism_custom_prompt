@@ -41,12 +41,14 @@ intro_template = """你是 LifePrism 的功能介绍助手。你的任务是根�
 输出内容忠实于资料
 ## 资料
 {guide_content}
-## 用户问题
+## 历史对话
+{history}
+## 当前用户问题
 {question}
 """
 
 intro_template = PromptTemplate(
-    input_variables=["guide_content", "question"],
+    input_variables=["guide_content", "history", "question"],
     template=intro_template
 )
 
