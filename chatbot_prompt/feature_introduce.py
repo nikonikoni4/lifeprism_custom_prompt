@@ -42,7 +42,7 @@ intro_template = """你是 LifePrism 的功能介绍助手。你的任务是根�
 ## 资料
 {guide_content}
 ## 历史对话
-{history}
+{history_messages}
 ## 当前用户问题
 {question}
 """
