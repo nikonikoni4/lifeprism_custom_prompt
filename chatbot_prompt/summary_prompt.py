@@ -101,6 +101,7 @@ class multi_days_summary_template(StringPromptTemplate):
         def custom_prompt_select(option):
             """
             options: 可选参数列表
+            - behavior_stats: 用户行为统计
             - goal_trend: 目标时间投入趋势
             - tasks: 每日重点与任务
             - category_trend: 不同分类投入时间趋势
@@ -108,14 +109,28 @@ class multi_days_summary_template(StringPromptTemplate):
             - usage_schedule: 电脑使用时间分析（作息推断）
             - all: 返回全部
             """
-            custom_prompt = "## "
+            custom_prompt = []
+            section_num = 1
+            if "all" in option or ("user_notes" in option and "behavior_stats" in option):
+                custom_prompt.append(f"""{section_num}. 结合分析用户备注和具体的分类统计，推断每个时间段用户做了什么，编写🕒 分时段行为推断。""")
+                section_num += 1
+            elif "all" in option or "behavior_stats" in option:
+                custom_prompt.append(f"""{section_num}. 结合分析用户备注和具体的分类统计，推断每个时间段用户做了什么，编写🕒 分时段行为推断。""")
+                section_num += 1
             if "all" in option or "tasks" in option:
-                return "## 注意：若用户任务完成率较低，需要提醒用户，并分析原因"
-            return ""
+                custom_prompt.append(f"""{section_num}. 依据今日重点与任务数据，编写🎯 任务完成情况分析；若用户任务完成率较低，需要提醒用户，并分析原因。""")
+                section_num += 1
+            if "all" in option or "category_trend" in option:
+                custom_prompt.append(f"""{section_num}. 依据不同分类投入时间趋势，编写 📊 分类投入时间趋势分析。""")
+                section_num += 1 
+            if "all" in option or "goal_trend" in option:
+                custom_prompt.append(f"""{section_num}. 依据不同分类投入时间趋势，编写 📊 分类投入时间趋势分析。""")
+                section_num += 1 
+            return "\n".join(custom_prompt)
         user_data = kwargs.get("user_data", "")
         custom_prompt = custom_prompt_select(kwargs.get("options", []))
         prompt = f"""
-你是lifeprism的软件助手，总结用户这几天都做了什么。
+你是lifeprism的软件助手，总结用户这几天都做了什么，趋势是什么。
 {custom_prompt}
 ## 用户数据（电脑使用数据）
 {user_data}
@@ -125,20 +140,44 @@ if __name__ == "__main__":
     from lifewatch.llm.llm_classify.utils import create_ChatTongyiModel
     from lifewatch.llm.llm_classify.tools.database_tools import get_daily_stats
     llm = create_ChatTongyiModel(temperature=0.5)
-    result = get_daily_stats.invoke(
-        input = {
-            "start_time": "2026-01-01 00:00:00",
-            "end_time": "2026-01-01 23:59:59",
-            "split_count": 4, 
-            "options": ["all"]
-        }
-    )
-    prompt_template = daily_summary_template(input_variables=["user_data", "options"])
-    input = prompt_template.format(
-        options=["all"],
-        user_data=result,
-    )
-    print(input)
-    output = llm.invoke(input=input)
-    print(output.content)
-   #  print("📅 LifePrism 助手提醒：新的一天即将开始，记得同步更新你的 focus 与 todos 哦！")
+    def daily_summary():
+        
+        
+        result = get_daily_stats.invoke(
+            input = {
+                "start_time": "2026-01-01 00:00:00",
+                "end_time": "2026-01-01 23:59:59",
+                "split_count": 4, 
+                "options": ["all"]
+            }
+        )
+        print(result)
+        prompt_template = daily_summary_template(input_variables=["user_data", "options"])
+        input = prompt_template.format(
+            options=["all"],
+            user_data=result,
+        )
+        print(input)
+        output = llm.invoke(input=input)
+        print(output.content)
+    #  print("📅 LifePrism 助手提醒：新的一天即将开始，记得同步更新你的 focus 与 todos 哦！")
+    def multi_days_summary():
+        from lifewatch.llm.llm_classify.tools.database_tools import get_multi_days_stats
+        result = get_multi_days_stats.invoke(
+            input = {
+                "start_time": "2025-12-25 00:00:00",
+                "end_time": "2026-01-02 23:59:59",
+                "split_count": 4, 
+                "options": ["all"]
+            }
+        )
+        print(result)
+        prompt_template = multi_days_summary_template(input_variables=["user_data", "options"])
+        input = prompt_template.format(
+            options=["all"],
+            user_data=result,
+        )
+        print(input)
+        output = llm.invoke(input=input)
+        print(output.content)
+    multi_days_summary()
