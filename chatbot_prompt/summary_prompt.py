@@ -1,14 +1,12 @@
 """
 总结的prompt,在reports界面使用
-这里的prompt与lifewatch\llm\llm_classify\tools\database_tools.py中的
+这里的prompt与lifewatch\llm\llm_classify\ tools\database_tools.py中的
 get_daily_stats和get_multi_days_stats 相关联
 
 打算是每个option都应该有一个对应的prompt，但是现在还没想好
 2026-1-3
 """
-from langchain_core.prompts import PromptTemplate
 from langchain_core.prompts import StringPromptTemplate
-import inspect
 # =========================================================
 # 每日总结
 # =========================================================
@@ -90,6 +88,7 @@ class daily_summary_template(StringPromptTemplate):
 ## 注意：上述数据仅来自电脑数据，并不代表用户所有活动，简单推断即可
 """
         return prompt
+ 
 
 # =========================================================
 # 多日总结
@@ -115,7 +114,7 @@ class multi_days_summary_template(StringPromptTemplate):
                 custom_prompt.append(f"""{section_num}. 结合分析用户备注和具体的分类统计，推断每个时间段用户做了什么，编写🕒 分时段行为推断。""")
                 section_num += 1
             elif "all" in option or "behavior_stats" in option:
-                custom_prompt.append(f"""{section_num}. 结合分析用户备注和具体的分类统计，推断每个时间段用户做了什么，编写🕒 分时段行为推断。""")
+                custom_prompt.append(f"""{section_num}. 结合分析用户备注和具体的分类统计，推断每个时间段用户做了什么，编写🕒 分时段行为推断。例如：""")
                 section_num += 1
             if "all" in option or "tasks" in option:
                 custom_prompt.append(f"""{section_num}. 依据今日重点与任务数据，编写🎯 任务完成情况分析；若用户任务完成率较低，需要提醒用户，并分析原因。""")
@@ -124,8 +123,11 @@ class multi_days_summary_template(StringPromptTemplate):
                 custom_prompt.append(f"""{section_num}. 依据不同分类投入时间趋势，编写 📊 分类投入时间趋势分析。""")
                 section_num += 1 
             if "all" in option or "goal_trend" in option:
-                custom_prompt.append(f"""{section_num}. 依据不同分类投入时间趋势，编写 📊 分类投入时间趋势分析。""")
+                custom_prompt.append(f"""{section_num}. 依据不同目标投入时间趋势，编写 📊 目标投入时间趋势分析。""")
                 section_num += 1 
+            if "all" in option or "usage_schedule" in option:
+                custom_prompt.append(f"""{section_num}. 依据电脑使用时间，推断用户可能的使用规律和作息，编写⏱️ 使用规律与作息分析。""")
+                section_num += 1
             return "\n".join(custom_prompt)
         user_data = kwargs.get("user_data", "")
         custom_prompt = custom_prompt_select(kwargs.get("options", []))
@@ -137,8 +139,8 @@ class multi_days_summary_template(StringPromptTemplate):
 """
         return prompt
 if __name__ == "__main__":
-    from lifewatch.llm.llm_classify.utils import create_ChatTongyiModel
-    from lifewatch.llm.llm_classify.tools.database_tools import get_daily_stats
+    from lifeprism.llm.llm_classify.utils import create_ChatTongyiModel
+    from lifeprism.llm.llm_classify.tools.database_tools import get_daily_stats
     llm = create_ChatTongyiModel(temperature=0.5)
     def daily_summary():
         
@@ -162,7 +164,7 @@ if __name__ == "__main__":
         print(output.content)
     #  print("📅 LifePrism 助手提醒：新的一天即将开始，记得同步更新你的 focus 与 todos 哦！")
     def multi_days_summary():
-        from lifewatch.llm.llm_classify.tools.database_tools import get_multi_days_stats
+        from lifeprism.llm.llm_classify.tools.database_tools import get_multi_days_stats
         result = get_multi_days_stats.invoke(
             input = {
                 "start_time": "2025-12-25 00:00:00",
@@ -180,4 +182,5 @@ if __name__ == "__main__":
         print(input)
         output = llm.invoke(input=input)
         print(output.content)
-    multi_days_summary()
+
+   
