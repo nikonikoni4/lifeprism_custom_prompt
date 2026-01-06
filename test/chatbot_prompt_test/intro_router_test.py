@@ -1,8 +1,8 @@
 import json
-from lifewatch.llm.llm_classify.utils import create_ChatTongyiModel
-from lifewatch.llm.custom_prompt.chatbot_prompt.feature_introduce import intro_router_template
-from lifewatch.llm.llm_classify.schemas.user_guide_schemas import GuideSection,UserGuide,SummaryOption
-from lifewatch.llm.llm_classify.utils.user_guide_parser import load_user_guide
+from lifeprism.llm.llm_classify.utils import create_ChatTongyiModel
+from lifeprism.llm.custom_prompt.chatbot_prompt.feature_introduce import intro_router_template
+from lifeprism.llm.llm_classify.schemas.user_guide_schemas import GuideSection,UserGuide,SummaryOption
+from lifeprism.llm.llm_classify.utils.user_guide_parser import load_user_guide
 chat_model = create_ChatTongyiModel(enable_search=False,
                             enable_thinking=False,
                             enable_streaming=False,temperature=0.5)
@@ -27,7 +27,7 @@ def update_usage(result):
 
 def test_for_intro_router():
     """两次路由版本：先粗筛再细筛"""
-    from lifewatch.llm.custom_prompt.chatbot_prompt.feature_introduce import intro_template
+    from lifeprism.llm.custom_prompt.chatbot_prompt.feature_introduce import intro_template
     
     # 重置 usage 统计
     usage["input_tokens"] = 0       
@@ -89,7 +89,7 @@ def test_for_intro_router():
 
 def test_for_intro_router_for_once():
     """简化版本：只进行一次路由调用后直接获取内容并生成回复"""
-    from lifewatch.llm.custom_prompt.chatbot_prompt.feature_introduce import intro_template
+    from lifeprism.llm.custom_prompt.chatbot_prompt.feature_introduce import intro_template
     
     # 重置 usage 统计
     usage["input_tokens"] = 0
