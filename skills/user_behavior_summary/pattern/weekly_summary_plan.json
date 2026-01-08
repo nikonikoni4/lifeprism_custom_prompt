@@ -1,0 +1,72 @@
+{
+    "complex": {
+        "task": "总结 {start_date} 到 {end_date} 这一周我做了什么",
+        "nodes": [
+            {
+                "node_name": "获取周概览与每日分解",
+                "task_prompt": "请并行调用以下工具获取本周数据：\n1. get_multi_days_stats 获取 {start_date} 00:00:00 到 {end_date} 23:59:59 的统计数据（使用 options=['behavior_stats', 'goal_trend', 'usage_schedule', 'comparison']）\n2. get_daily_breakdown 获取 {start_date} 到 {end_date} 的每日分解表格\n3. query_weekly_focus 获取本周焦点（根据 {start_date} 计算年月周）\n4. query_daily_summaries 获取每日 AI 摘要",
+                "tools": [
+                    "get_multi_days_stats",
+                    "get_daily_breakdown",
+                    "query_weekly_focus",
+                    "query_daily_summaries"
+                ]
+            },
+            {
+                "node_name": "获取用户背景信息",
+                "task_prompt": "调用 query_goals 获取用户设定的目标信息，以及 query_psychological_assessment 获取心理测评数据。这些数据将帮助理解用户的长期规划和行为动机。",
+                "tools": [
+                    "query_goals",
+                    "query_psychological_assessment"
+                ]
+            },
+            {
+                "node_name": "深入探索异常天",
+                "task_prompt": "根据 get_daily_breakdown 返回的每日分解表格，识别出与常规模式差异较大的日期（如使用时长过短/过长、分类占比异常、电脑启用/结束时间异常等）。对这些异常天调用 query_behavior_logs 查询详细行为日志，每天最多查询1次。\n注意：仅在发现明显异常时才调用，避免过度查询。",
+                "tools": [
+                    "query_behavior_logs"
+                ]
+            },
+            {
+                "node_name": "生成周报总结",
+                "task_prompt": "整合所有收集的数据，生成本周行为总结报告。报告需包含：\n\n1) 📊 本周概览\n   - 总使用时长、各分类时间分布\n   - 与上周对比的变化趋势\n\n2) 🎯 周焦点执行情况\n   - 用户设定的周焦点是什么\n   - 实际执行情况评估\n\n3) 📅 每日亮点回顾\n   - 结合每日 AI 摘要，提炼每天的关键活动\n   - 标注异常天及原因分析\n\n4) 🎯 目标进展\n   - 各目标本周投入时间\n   - 与预期目标的差距分析\n\n5) 💡 改进建议\n   - 基于数据给出具体可行的下周建议\n\n注意使用 '可能' '推测' 等限定词，明确标注数据局限性。",
+                "tools": null
+            }
+        ],
+        "tools_limit": {
+            "get_multi_days_stats": 1,
+            "get_daily_breakdown": 1,
+            "query_weekly_focus": 1,
+            "query_daily_summaries": 1,
+            "query_goals": 1,
+            "query_psychological_assessment": 1,
+            "query_behavior_logs": 3
+        }
+    },
+    "custom": {
+        "task": "总结 {start_date} 到 {end_date} 这一周我做了什么",
+        "nodes": [
+            {
+                "node_name": "收集周数据",
+                "task_prompt": "请调用 get_multi_days_stats 获取 {start_date} 00:00:00 到 {end_date} 23:59:59 的多日统计数据，同时调用 get_daily_breakdown 获取每日分解表格，以及 query_weekly_focus 获取本周焦点。",
+                "tools": [
+                    "get_multi_days_stats",
+                    "get_daily_breakdown",
+                    "query_weekly_focus"
+                ]
+            },
+            {
+                "node_name": "深入查询异常",
+                "task_prompt": "根据每日分解数据，如发现某天数据异常（使用时长差异大、分类占比突变等），使用 query_behavior_logs 查询该天详情。\n注意：每天最多查询1次，仅查询明显异常的日期。",
+                "tools": [
+                    "query_behavior_logs"
+                ]
+            },
+            {
+                "node_name": "生成周报",
+                "task_prompt": "整合所有数据，生成周报总结。需包含：\n1) 本周时间分配概览与上周对比\n2) 周焦点执行评估\n3) 每日关键活动回顾\n4) 目标进展与改进建议\n\n注意使用限定词标注推测内容。",
+                "tools": null
+            }
+        ]
+    }
+}

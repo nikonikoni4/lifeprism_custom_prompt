@@ -1,6 +1,6 @@
 from lifeprism.llm.llm_classify.providers.llm_lw_data_provider import llm_lw_data_provider
 
-def _format_seconds(seconds: int) -> str:
+def format_seconds(seconds: int) -> str:
     """将秒数格式化为可读时间"""
     if seconds < 60:
         return f"{seconds}秒"
@@ -43,7 +43,7 @@ def format_period_stats(title, start_time, end_time):
         duration = cat['duration']
         percentage = cat['percentage']
         
-        target_output += f"      - {name}: {_format_seconds(duration)}（{percentage}%）\n"
+        target_output += f"      - {name}: {format_seconds(duration)}（{percentage}%）\n"
         
         # Sub categories
         if sub_categories and cat_id != 'idle':
@@ -52,7 +52,7 @@ def format_period_stats(title, start_time, end_time):
                 sub_name = sub['name']
                 sub_duration = sub['duration']
                 sub_percentage = sub['percentage']
-                target_output += f"         - {sub_name}: {_format_seconds(sub_duration)}（{sub_percentage}%）\n"
+                target_output += f"         - {sub_name}: {format_seconds(sub_duration)}（{sub_percentage}%）\n"
 
     return target_output
 

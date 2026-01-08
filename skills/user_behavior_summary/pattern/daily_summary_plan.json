@@ -24,5 +24,31 @@
                 "tools": null
             }
         ]
+    },
+    "custom": {
+        "task": "总结 {date} 我做了什么",
+        "nodes": [
+            {
+                "node_name": "收集核心统计数据",
+                "task_prompt": "请调用 get_daily_stats 获取 {date} 的电脑使用统计数据，同时调用 query_goals 获取用户设定的目标信息，以及 query_psychological_assessment 获取心理测评数据。这些数据将用于分析任务完成情况、行为规律和心理状态关联性。",
+                "tools": [
+                    "get_daily_stats",
+                    "query_goals",
+                    "query_psychological_assessment"
+                ]
+            },
+            {
+                "node_name": "获取详细行为日志",
+                "task_prompt": "基于上一步收集的统计数据，有针对性地调用 query_behavior_logs 深挖关键时段。\n\n【调用策略】\n1. 优先选择：用户备注标记的时段、目标关联的高产出时段、异常数据时段（如分类占比突变）\n2. 时间限制：每次调用时间跨度不超过 2 小时\n3. 调用次数：最多调用 2-3 次，聚焦最有价值的时段\n\n【示例】\n- 若发现 xx:00-xx:00 工作/学习占比高，可调用该时段了解具体做了什么\n- 若发现 xx:00 后有异常活动，可调用该时段确认\n\n【禁止】\n- 不要调用全天范围（如 00:00-23:59）\n- 不要无依据地随机选择时段",
+                "tools": [
+                    "query_behavior_logs"
+                ]
+            },
+            {
+                "node_name": "生成行为总结",
+                "task_prompt": "整合所有收集的数据，按照每日总结格式生成 {date} 的行为摘要。需包含：\n1) 分时段行为推断（结合应用记录与用户备注）\n2) 作息规律分析\n3) 目标任务完成情况评估\n4) 综合亮点总结\n\n注意使用 '可能' '推测' 等限定词，明确标注数据局限性。。",
+                "tools": null
+            }
+        ]
     }
 }

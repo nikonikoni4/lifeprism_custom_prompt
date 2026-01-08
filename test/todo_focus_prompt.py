@@ -1,5 +1,5 @@
 
-def _format_user_notes(notes: list) -> str:
+def format_user_notes(notes: list) -> str:
     """格式化用户备注数据"""
     if not notes:
         return "  - 暂无用户备注"
@@ -117,9 +117,9 @@ if __name__ == "__main__":
     # print(result.content)
     # ai_summary = result.content
     custom_block = llm_lw_data_provider.get_user_focus_notes(start_time="2026-01-02 00:00:00", end_time="2026-01-02 23:59:59")
-    print(_format_user_notes(custom_block))
+    print(format_user_notes(custom_block))
 
-    # prompt = custom_prompt_user_notes(ai_summary, _format_user_notes(custom_block))
+    # prompt = custom_prompt_user_notes(ai_summary, format_user_notes(custom_block))
     # print(prompt)
     # result = model.invoke(input = prompt)
     # print(result.content)
