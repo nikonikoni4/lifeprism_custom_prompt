@@ -1,62 +1,106 @@
 {
-  "complex": {
-    "task": "总结 {date} 我做了什么",
-    "nodes": [
-      {
-        "node_name": "收集核心统计数据",
-        "task_prompt": "请调用 get_daily_stats 获取 {date} 的电脑使用统计数据，同时调用 query_goals 获取用户设定的目标信息，以及 query_psychological_assessment 获取心理测评数据。这些数据将用于分析任务完成情况、行为规律和心理状态关联性。",
-        "tools": [
-          "get_daily_stats",
-          "query_goals",
-          "query_psychological_assessment"
-        ]
-      },
-      {
-        "node_name": "获取详细行为日志",
-        "task_prompt": "根据核心统计数据中的活跃时间段分布，调用 query_behavior_logs 查询 {date} 的详细应用使用记录。重点关注用户备注标记的时段、工作类应用集中使用时段，以及可能与目标关联的时间块，用于分时段行为推断。",
-        "tools": [
-          "query_behavior_logs"
-        ]
-      },
-      {
-        "node_name": "生成行为总结",
-        "task_prompt": "整合所有收集的数据，按照每日总结格式生成 {date} 的行为摘要。需包含：\n1) 分时段行为推断（结合应用记录与用户备注）\n2) 作息规律分析\n3) 目标任务完成情况评估\n4) 综合亮点总结\n\n注意使用 '可能' '推测' 等限定词，明确标注数据局限性，并给出具体可行的改进建议。",
-        "tools": null
-      }
-    ]
-  },
-  "llm_generate_pattern": {
-    "task": "总结{date}用户行为",
-    "nodes": [
-      {
-        "node_name": "获取每日统计数据",
-        "task_prompt": "调用 get_daily_stats 工具获取 {date} 的统计数据，包括应用使用记录、活跃/空闲时间、分类统计和目标关联时间。确保数据准确，并注意仅反映电脑使用情况。",
-        "tools": [
-          "get_daily_stats"
-        ]
-      },
-      {
-        "node_name": "查询行为日志",
-        "task_prompt": "调用 query_behavior_logs 工具查询 {date} 的详细应用使用记录，重点关注时间段划分、窗口标题（避免敏感信息）和用户备注，用于分时段行为推断。",
-        "tools": [
-          "query_behavior_logs"
-        ]
-      },
-      {
-        "node_name": "查询用户目标",
-        "task_prompt": "调用 query_goals 工具查询用户设置的目标信息，包括今日重点任务和任务列表，用于任务完成情况分析。",
-        "tools": [
-          "query_goals"
-        ]
-      },
-      {
-        "node_name": "生成行为总结",
-        "task_prompt": "基于获取的数据，生成{date}的用户行为总结。总结必须包含：1. 分时段行为推断：结合分类统计和用户备注，推断每个时段的主要活动（使用'可能'、'推测'等词汇，避免过度解读）；2. 使用规律与作息分析：分析电脑使用时间，推断作息特点（承认数据局限性，仅包括电脑使用）；3. 任务完成情况分析：分析任务完成率，给出具体可行的改进建议，并积极鼓励用户成就；4. 综合总结：概括今天的主要活动和亮点。确保数据驱动、洞察导向、建议友好、积极鼓励，并明确指出数据不包括线下活动、手机使用等。",
-        "tools": null
-      }
-    ],
-    "tools_limit": {
-      "query_usage_logs": 7
+    "complex": {
+        "task": "总结{date}这一天我做了什么",
+        "nodes": [
+            {
+                "node_type": "tool-first",
+                "node_name": "具体时间分析方案",
+                "task_prompt": "依据用户电脑使用数据和用户行为统计数据,为了进一步推断用户在具体时间的行为,给出4~7个小于1.5h的时间段用于仔细分析。要求：1. 直接给出时间段，不需要分析 2. 若在行为统计分析中的主要活动记录和用户备注能够对应上，则尽量不要选择用户备注的时间段。3. 重点关注电脑使用频率高，但信息量少的区域。",
+                "thread_id": "q1",
+                "data_out_thread": "main",
+                "initial_tool_name": "get_daily_stats",
+                "initial_tool_args": {
+                    "start_time": "{date} 00:00:00",
+                    "end_time": "{date} 23:59:59",
+                    "split_count": 6,
+                    "options": [
+                        "pc_active_time",
+                        "behavior_stats",
+                        "user_notes"
+                    ]
+                },
+                "data_out": false,
+                "data_out_description": "用户行为统计数据: "
+            },
+            {
+                "node_type": "llm-first",
+                "node_name": "开启新线程，调用时间线",
+                "task_prompt": "依据上面给出的需要调用的时间段，调用query_behavior_timeline",
+                "thread_id": "q2",
+                "data_in_thread": "q1",
+                "data_in_slice": [
+                    -1,
+                    null
+                ],
+                "data_out_thread": "q1",
+                "data_out": false,
+                "tools": [
+                    "query_behavior_timeline"
+                ]
+            },
+            {
+                "node_type": "tool-first",
+                "node_name": "小时间窗口分析",
+                "task_prompt": "根据用户todo和时间线数据，推断用户在这段时间内可能在做什么事情。要求：1. 总结简单直接，2. 推断过程简单回答。3. 对于关键的数据需要给出，但不能过多。",
+                "thread_id": "q2",
+                "data_out_thread": "q1",
+                "initial_tool_name": "query_daily_todos",
+                "initial_tool_args": {
+                    "start_date": "{date}",
+                    "end_date": "{date}"
+                },
+                "data_out": true,
+                "data_out_description": "仔细的分时段总结: "
+            },
+            {
+                "node_type": "tool-first",
+                "node_name": "作息分析",
+                "task_prompt": "你需要依据电脑使用时间表来判断是否需要调用工具query_behavior_timeline来具体了解用户最后1h的使用情况。 \n ## 当满足一下情况时需要调用工具：\n 1. 最晚使用时间超过23:59:59\n 2. 并且最后使用的1h内这段时间用户没有任\n 3. 若不满足1，2则返回'' ## 调用时间说明\n 调用时间窗口为最后使用的1h",
+                "thread_id": "q3",
+                "initial_tool_name": "get_daily_breakdown",
+                "initial_tool_args": {
+                    "start_date": "{date}",
+                    "end_date": "{date}"
+                },
+                "tools": [
+                    "query_behavior_timeline"
+                ]
+            },
+            {
+                "node_type": "llm-first",
+                "node_name": "分析作息时间",
+                "task_prompt": "依据上述电脑使用时间表和timeline数据（如果有的话），推测作者的作息时间，若出现晚睡情况（超过23:59）需要结合timeline数据说明用户最后1h做了什么。",
+                "thread_id": "q3",
+                "data_out_thread": "q1",
+                "data_out": true,
+                "data_out_description": "作息分析: "
+            },
+            {
+                "node_type": "tool-first",
+                "node_name": "总的分析",
+                "task_prompt": "结合用户行为统计数据，用户行为时间线分析，用户作息时间分析，今日重点与任务，目标时间投入，与前一天的对比数据等数据进行总和分析。按照每日总结格式生成 {date} 的行为摘要。需包含：1) 分时段行为推断（结合应用记录，其他具体的时间线分析与用户备注）2） 作息规律分析 3) 目标任务完成情况评估 4) 综合总结 。注意使用 '可能' '推测' 等限定词，明确标注数据局限性。",
+                "thread_id": "q1",
+                "data_out_thread": "q1",
+                "initial_tool_name": "get_daily_stats",
+                "initial_tool_args": {
+                    "start_time": "{date} 00:00:00",
+                    "end_time": "{date} 23:59:59",
+                    "split_count": 6,
+                    "options": [
+                        "goal_time_spent",
+                        "tasks",
+                        "comparison"
+                    ]
+                },
+                "data_out": true,
+                "data_out_description": "行为摘要: "
+            }
+        ],
+        "tools_limit": {
+            "query_behavior_timeline": 10,
+            "query_behavior_logs": 5,
+            "query_daily_todos": 2,
+            "get_daily_stats": 2
+        }
     }
-  }
 }

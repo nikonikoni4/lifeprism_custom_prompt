@@ -7,7 +7,6 @@
                 "node_name": "具体时间分析方案",
                 "task_prompt": "依据用户电脑使用数据和用户行为统计数据,为了进一步推断用户在具体时间的行为,给出4~7个小于1.5h的时间段用于仔细分析。要求：1. 直接给出时间段，不需要分析 2. 若在行为统计分析中的主要活动记录和用户备注能够对应上，则尽量不要选择用户备注的时间段。3. 重点关注电脑使用频率高，但信息量少的区域。",
                 "thread_id": "q1",
-                "data_out_thread": "main",
                 "initial_tool_name": "get_daily_stats",
                 "initial_tool_args": {
                     "start_time": "{date} 00:00:00",
@@ -19,8 +18,7 @@
                         "user_notes"
                     ]
                 },
-                "data_out": false,
-                "data_out_description": "用户行为统计数据: "
+                "data_out": false
             },
             {
                 "node_type": "llm-first",
@@ -36,7 +34,10 @@
                 "data_out": false,
                 "tools": [
                     "query_behavior_timeline"
-                ]
+                ],
+                "tools_limit": {
+                    "query_behavior_timeline": 8
+                }
             },
             {
                 "node_type": "tool-first",
@@ -64,7 +65,10 @@
                 },
                 "tools": [
                     "query_behavior_timeline"
-                ]
+                ],
+                "tools_limit": {
+                    "query_behavior_timeline": 3
+                }
             },
             {
                 "node_type": "llm-first",
@@ -95,12 +99,6 @@
                 "data_out": true,
                 "data_out_description": "行为摘要: "
             }
-        ],
-        "tools_limit": {
-            "query_behavior_timeline": 10,
-            "query_behavior_logs": 5,
-            "query_daily_todos": 2,
-            "get_daily_stats": 2
-        }
+        ]
     }
 }
