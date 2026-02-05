@@ -139,8 +139,8 @@ class multi_days_summary_template(StringPromptTemplate):
 """
         return prompt
 if __name__ == "__main__":
-    from lifeprism.llm.llm_classify.utils import create_ChatTongyiModel
-    from lifeprism.llm.llm_classify.tools.database_tools import get_daily_stats
+    from lifeprism.llm.utils import create_ChatTongyiModel
+    from lifeprism.llm.tools.database_tools import get_daily_stats
     llm = create_ChatTongyiModel(temperature=0.5)
     def daily_summary():
         
@@ -164,7 +164,7 @@ if __name__ == "__main__":
         print(output.content)
     #  print("📅 LifePrism 助手提醒：新的一天即将开始，记得同步更新你的 focus 与 todos 哦！")
     def multi_days_summary():
-        from lifeprism.llm.llm_classify.tools.database_tools import get_multi_days_stats
+        from lifeprism.llm.tools.database_tools import get_multi_days_stats
         result = get_multi_days_stats.invoke(
             input = {
                 "start_time": "2025-12-25 00:00:00",
